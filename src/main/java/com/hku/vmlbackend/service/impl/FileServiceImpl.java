@@ -21,7 +21,7 @@ import java.util.Map;
 @Service
 public class FileServiceImpl implements FileService {
     // 假设使用一个简单的Map来存储MD5和文件路径的映射
-    // 实际应用中应使用数据库
+    // TODO 使用数据库存储
     private Map<String, String> fileStorage = new HashMap<>();
     private final static String PATH = "D:\\uploads";
     @Override
@@ -37,7 +37,8 @@ public class FileServiceImpl implements FileService {
             }
             file.transferTo(dest);
 
-            fileStorage.put(MD5Utils.calculateMD5(dest),path);
+            String MD5 = MD5Utils.calculateMD5(dest);
+            fileStorage.put(MD5,path);
 
 
 

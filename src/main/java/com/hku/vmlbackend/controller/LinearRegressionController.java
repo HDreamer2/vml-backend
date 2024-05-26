@@ -1,9 +1,12 @@
 package com.hku.vmlbackend.controller;
 
 import com.hku.vmlbackend.common.result.Result;
+import com.hku.vmlbackend.dto.EpochDataDTO;
+import com.hku.vmlbackend.dto.LinearRegressionTrainDTO;
 import com.hku.vmlbackend.service.LinearRegressionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -15,19 +18,14 @@ public class LinearRegressionController {
     private LinearRegressionService linearRegressionService;
 
     @PostMapping("/train")
-    public Result train(String[] features, String label, int epoch, String MD5) {
-        linearRegressionService.train(features, label, epoch, MD5);
+    public Result train(@RequestBody LinearRegressionTrainDTO dto) {
+        linearRegressionService.train(dto);
         return Result.success();
     }
 
-    @PostMapping("/getEpochData")
-    //TODO 从Python后端获取训练过程中的数据
-    public Result getEpochData() {
-        try {
-            String epochData = linearRegressionService.getEpochData();
-            return Result.success(epochData);
-        } catch (Exception e) {
-            return Result.failure(e.getMessage());
-        }
+    @PostMapping("/get-epoch-data")
+    public Result getEpochData(@RequestBody EpochDataDTO dto) {
+        linearRegressionService.getEpochData(dto);
+        return Result.success();
     }
 }
