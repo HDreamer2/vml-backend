@@ -36,6 +36,9 @@ public class LinearRegressionServiceImpl implements LinearRegressionService {
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("file", new FileSystemResource(file));
         //TODO 添加features, label, epoch参数
+        body.add("features", features);
+        body.add("label", label);
+        body.add("epoch", epoch);
 
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
         ResponseEntity<String> response = restTemplate.exchange(
@@ -44,5 +47,19 @@ public class LinearRegressionServiceImpl implements LinearRegressionService {
                 requestEntity,
                 String.class
         );
+        if (response.getStatusCode() != HttpStatus.OK) {
+            throw new RuntimeException("Failed to train model: " + response.getStatusCode());
+        }
+        @Override
+        public String getEpochData() {
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<String> response = restTemplate.getForEntity(pythonServerUrl + "/linear-regression/get-epoch-data", String.class);
+
+            if (response.getStatusCode() != HttpStatus.OK) {
+                throw new RuntimeException("Failed to get epoch data: " + response.getStatusCode());
+            }
+
+            return response.getBody();
+        }
     }
 }
