@@ -23,7 +23,11 @@ public class LinearRegressionController {
     @PostMapping("/getEpochData")
     //TODO 从Python后端获取训练过程中的数据
     public Result getEpochData() {
-
-        return Result.success();
+        try {
+            String epochData = linearRegressionService.getEpochData();
+            return Result.success(epochData);
+        } catch (Exception e) {
+            return Result.failure(e.getMessage());
+        }
     }
 }
