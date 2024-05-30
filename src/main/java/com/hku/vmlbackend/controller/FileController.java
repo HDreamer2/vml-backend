@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/file")
+@CrossOrigin(origins = "*")  // 允许所有来源的跨域请求
 public class FileController {
 
     @Autowired
