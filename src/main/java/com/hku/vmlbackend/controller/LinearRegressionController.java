@@ -5,13 +5,11 @@ import com.hku.vmlbackend.dto.EpochDataDTO;
 import com.hku.vmlbackend.dto.LinearRegressionTrainDTO;
 import com.hku.vmlbackend.service.LinearRegressionService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/linear-regression")
+@CrossOrigin(origins = "*")  // 允许所有来源的跨域请求
 public class LinearRegressionController {
 
     @Autowired
