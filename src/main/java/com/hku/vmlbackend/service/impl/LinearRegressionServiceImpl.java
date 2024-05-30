@@ -1,5 +1,6 @@
 package com.hku.vmlbackend.service.impl;
 
+import com.corundumstudio.socketio.SocketIOServer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hku.vmlbackend.dto.EpochDataDTO;
@@ -27,7 +28,8 @@ public class LinearRegressionServiceImpl implements LinearRegressionService {
     private String pythonServerUrl;
     @Autowired
     private FileService fileService;
-
+    @Autowired
+    private SocketIOServer socketIOServer;
     ObjectMapper objectMapper = new ObjectMapper();
     @Override
     public void train(LinearRegressionTrainDTO dto) {
@@ -66,7 +68,10 @@ public class LinearRegressionServiceImpl implements LinearRegressionService {
     }
     @Override
     public void getEpochData(EpochDataDTO dto) {
-        //TODO 通过websocket将数据传递给前端
+        //TODO 通过socketio将数据传递给前端
+        // 通过Socket.IO将数据传递给前端
+        socketIOServer.getBroadcastOperations().sendEvent("epochData", dto);
+
         log.info("Epoch: {}, Weights: {}, Bias: {}, Loss: {}", dto.getEpoch(), dto.getWeights(), dto.getBias(), dto.getLoss());
     }
 }
