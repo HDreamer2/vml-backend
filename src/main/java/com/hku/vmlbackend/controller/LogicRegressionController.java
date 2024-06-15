@@ -2,6 +2,7 @@ package com.hku.vmlbackend.controller;
 
 import com.hku.vmlbackend.common.result.Result;
 import com.hku.vmlbackend.dto.EpochDataDTO;
+import com.hku.vmlbackend.dto.LogicRegressionEpochDataDTO;
 import com.hku.vmlbackend.dto.LogicRegressionTrainDTO;
 import com.hku.vmlbackend.service.LogicRegressionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +23,7 @@ public class LogicRegressionController {
     }
 
     @PostMapping("/get-epoch-data")
-    public Result getEpochData(@RequestBody EpochDataDTO dto) {
+    public Result getEpochData(@RequestBody LogicRegressionEpochDataDTO dto) {
         logicRegressionService.getEpochData(dto);
         return Result.success();
     }

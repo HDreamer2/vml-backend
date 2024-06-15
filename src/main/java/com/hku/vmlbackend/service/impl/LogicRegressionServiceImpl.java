@@ -1,6 +1,6 @@
 package com.hku.vmlbackend.service.impl;
 
-import com.hku.vmlbackend.dto.EpochDataDTO;
+import com.hku.vmlbackend.dto.LogicRegressionEpochDataDTO;
 import com.hku.vmlbackend.dto.LogicRegressionTrainDTO;
 import com.hku.vmlbackend.service.LogicRegressionService;
 import org.springframework.stereotype.Service;
@@ -14,7 +14,7 @@ public class LogicRegressionServiceImpl implements LogicRegressionService {
     }
 
     @Override
-    public void getEpochData(EpochDataDTO dto) {
+    public void getEpochData(LogicRegressionEpochDataDTO dto) {
         //TODO
     }
 }
