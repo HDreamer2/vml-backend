@@ -3,14 +3,12 @@ package com.hku.vmlbackend.controller;
 import com.hku.vmlbackend.common.result.Result;
 import com.hku.vmlbackend.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/file")
+@CrossOrigin(origins = "*")  // 允许所有来源的跨域请求
 public class FileController {
 
     @Autowired
@@ -18,16 +16,17 @@ public class FileController {
 
 
     @PostMapping("/upload-csv")
-    public Result uploadCsvFile(@RequestParam("file") MultipartFile file) {
+    public Result<String> uploadCsvFile(@RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
             return Result.error("Please select a file to upload");
         }
+        String fileId = null;
         try {
-            fileService.uploadCsvFile(file);
+            fileId = fileService.uploadCsvFile(file);
         } catch (RuntimeException e) {
             return Result.error(e.getMessage());
 
         }
-        return Result.success();
+        return Result.success(fileId);
     }
 }
