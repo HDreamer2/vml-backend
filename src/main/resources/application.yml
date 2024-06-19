@@ -1,0 +1,33 @@
+server:
+  port: 8080
+  #upload file,????
+  tomcat:
+    basedir: /data/apps/temp
+
+
+python:
+  server:
+    url: http://msp23050s1.cs.hku.hk:8084
+
+spring:
+  profiles:
+    active: dev
+  # ??????????
+  servlet:
+    multipart:
+      max-file-size:200MB
+      max-request-size:200MB
+minio:
+  host: http://msp23050s1.cs.hku.hk:8082
+  url: ${minio.host}/${minio.bucket}/
+  access-key: ${minio-dev.access-key}
+  secret-key: ${minio-dev.secret-key}
+  bucket: capstone
+#socket????
+socketio:
+  host: localhost #IP??
+  port: 8081  #???
+#?linux????????
+file:
+  upload:
+    path: /home/msp23050

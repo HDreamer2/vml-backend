@@ -1,35 +1,38 @@
 package com.hku.vmlbackend.service.impl;
 
 import com.hku.vmlbackend.common.MD5Utils;
-import com.hku.vmlbackend.common.result.Result;
+import com.hku.vmlbackend.config.MinioConfig;
 import com.hku.vmlbackend.service.FileService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
 @Service
+@Slf4j
 public class FileServiceImpl implements FileService {
     // 假设使用一个简单的Map来存储MD5和文件路径的映射
     // TODO 使用数据库存储
     private Map<String, String> fileStorage = new HashMap<>();
     private final static String PATH = "D:\\uploads";
+    // 从配置文件中读取文件上传路径
+    @Value("${file.upload.path}")
+    private String uploadPath;
+
+
+    @Autowired
+    private MinioConfig minioConfig;
     @Override
     public void uploadCsvFile(MultipartFile file) {
         String path = PATH + File.separator + file.getOriginalFilename();
-
+//        String path = uploadPath + File.separator + file.getOriginalFilename();
         try {
-            // 将文件保存到指定路径
+             //将文件保存到指定路径
             File dest = new File(path);
             // 保存文件
             if (!dest.getParentFile().exists()) {
@@ -39,12 +42,10 @@ public class FileServiceImpl implements FileService {
 
             String MD5 = MD5Utils.calculateMD5(dest);
             fileStorage.put(MD5,path);
-
-
-
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to upload file: " + e.getMessage(), e);
-        } catch (NoSuchAlgorithmException e) {
+            log.info("md5:{}",MD5);
+//            String url = minioConfig.putObject(file);
+//            log.info("上传成功，url: {}", url);
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -52,6 +53,7 @@ public class FileServiceImpl implements FileService {
     @Override
     public File getFileByMD5(String md5) {
         String path = fileStorage.get(md5);
+
         if (path == null) {
             return null;
         }

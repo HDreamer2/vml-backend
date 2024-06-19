@@ -9,6 +9,7 @@ import com.hku.vmlbackend.service.FileService;
 import com.hku.vmlbackend.service.LinearRegressionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.*;
@@ -20,7 +21,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.util.List;
-
 @Service
 @Slf4j
 public class LinearRegressionServiceImpl implements LinearRegressionService {
@@ -30,6 +30,8 @@ public class LinearRegressionServiceImpl implements LinearRegressionService {
     private FileService fileService;
     @Autowired
     private SocketIOServer socketIOServer;
+
+
     ObjectMapper objectMapper = new ObjectMapper();
     @Override
     public void train(LinearRegressionTrainDTO dto) {
@@ -68,10 +70,14 @@ public class LinearRegressionServiceImpl implements LinearRegressionService {
     }
     @Override
     public void getEpochData(EpochDataDTO dto) {
-        //TODO 通过socketio将数据传递给前端
-        // 通过Socket.IO将数据传递给前端
-        socketIOServer.getBroadcastOperations().sendEvent("epochData", dto);
-
+        // 通过Socket.IO将数据传递给客户端
+        try {
+            String epochDataJson = objectMapper.writeValueAsString(dto);
+            socketIOServer.getBroadcastOperations().sendEvent("epochData", epochDataJson);
+            log.info("Epoch data sent to clients: {}", epochDataJson);
+        } catch (JsonProcessingException e) {
+            log.error("Error converting EpochDataDTO to JSON", e);
+        }
         log.info("Epoch: {}, Weights: {}, Bias: {}, Loss: {}", dto.getEpoch(), dto.getWeights(), dto.getBias(), dto.getLoss());
     }
 }
