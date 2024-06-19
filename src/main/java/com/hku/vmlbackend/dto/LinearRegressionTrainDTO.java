@@ -8,5 +8,5 @@ public class LinearRegressionTrainDTO {
     private String[] features;
     private String label;
     private Integer epoch;
-    private String md5;
+    private String fileId;
 }
