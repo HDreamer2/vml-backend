@@ -1,6 +1,5 @@
 package com.hku.vmlbackend.service.impl;
 
-import com.hku.vmlbackend.common.MD5Utils;
 import com.hku.vmlbackend.config.MinioConfig;
 import com.hku.vmlbackend.service.FileService;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +22,6 @@ public class FileServiceImpl implements FileService {
     private MinioConfig minioConfig;
     @Override
     public String uploadCsvFile(MultipartFile file) {
-        String path = PATH + File.separator + file.getOriginalFilename();
 
         try {
 //            // 将文件保存到指定路径
