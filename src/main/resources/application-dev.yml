@@ -1,3 +1,12 @@
 minio-dev:
   access-key: ygvEL3wO2Q5RBKrH5fCi
   secret-key: KmipWx5wzybLihd3zSDNc1pmaqi4VGZlirHTRg85
+
+vml:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    host: localhost
+    port: 3306
+    database: vml
+    username: root
+    password: 123456
