@@ -45,6 +45,7 @@ public class FileServiceImpl implements FileService {
     @Override
     public File getFileByMD5(String md5) {
         String path = fileStorage.get(md5);
+
         if (path == null) {
             return null;
         }

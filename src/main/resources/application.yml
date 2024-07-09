@@ -4,18 +4,21 @@ server:
   tomcat:
     basedir: /data/apps/temp
 
+
 python:
   server:
-    url: http://localhost:5000
+    #根据开发/测试环境修改
+    url: http://msp23050s1.cs.hku.hk:8084
 
 spring:
   profiles:
-    # 指定当前应用的配置环境
     active: dev
+
   servlet:
     multipart:
       max-file-size:200MB
       max-request-size:200MB
+
 
   datasource:
     druid:
@@ -40,12 +43,23 @@ logging:
         service: info
         controller: info
 
+
 minio:
   host: http://msp23050s1.cs.hku.hk:8082
   url: ${minio.host}/${minio.bucket}/
   access-key: ${minio-dev.access-key}
   secret-key: ${minio-dev.secret-key}
   bucket: capstone
+
+#socket????
+socketio:
+  host: localhost #IP??
+  port: 8081  #???
+#?linux????????
+file:
+  upload:
+    path: /home/msp23050
+
 jwt:
   # 设置jwt签名加密时使用的秘钥
   secret-key: itcast
@@ -54,3 +68,4 @@ jwt:
   # 设置前端传递过来的令牌名称
   token-name: token
   # 设置jwt签名加密时使用的秘钥
+
