@@ -1,7 +1,7 @@
 package com.hku.vmlbackend.controller;
 
 import com.hku.vmlbackend.common.result.Result;
-import com.hku.vmlbackend.dto.EpochDataDTO;
+import com.hku.vmlbackend.dto.LinearRegressionEpochDataDTO;
 import com.hku.vmlbackend.dto.LinearRegressionTrainDTO;
 import com.hku.vmlbackend.service.LinearRegressionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +22,7 @@ public class LinearRegressionController {
     }
 
     @PostMapping("/get-epoch-data")
-    public Result getEpochData(@RequestBody EpochDataDTO dto) {
+    public Result getEpochData(@RequestBody LinearRegressionEpochDataDTO dto) {
         linearRegressionService.getEpochData(dto);
         return Result.success();
     }

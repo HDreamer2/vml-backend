@@ -1,28 +1,56 @@
 server:
   port: 8080
-  #upload file,????
+  #upload file
   tomcat:
     basedir: /data/apps/temp
 
 
 python:
   server:
+    #根据开发/测试环境修改
     url: http://msp23050s1.cs.hku.hk:8084
 
 spring:
   profiles:
     active: dev
-  # ??????????
+
   servlet:
     multipart:
       max-file-size:200MB
       max-request-size:200MB
+
+
+  datasource:
+    druid:
+      driver-class-name: ${vml.datasource.driver-class-name}
+      url: jdbc:mysql://${vml.datasource.host}:${vml.datasource.port}/${vml.datasource.database}?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
+      username: ${vml.datasource.username}
+      password: ${vml.datasource.password}
+
+mybatis:
+  #mapper配置文件
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.hku.vmlbackend.entity
+  configuration:
+    #开启驼峰命名
+    map-underscore-to-camel-case: true
+
+logging:
+  level:
+    com:
+      sky:
+        mapper: debug
+        service: info
+        controller: info
+
+
 minio:
   host: http://msp23050s1.cs.hku.hk:8082
   url: ${minio.host}/${minio.bucket}/
   access-key: ${minio-dev.access-key}
   secret-key: ${minio-dev.secret-key}
   bucket: capstone
+
 #socket????
 socketio:
   host: localhost #IP??
@@ -31,3 +59,13 @@ socketio:
 file:
   upload:
     path: /home/msp23050
+
+jwt:
+  # 设置jwt签名加密时使用的秘钥
+  secret-key: itcast
+  # 设置jwt过期时间
+  ttl: 7200000
+  # 设置前端传递过来的令牌名称
+  token-name: token
+  # 设置jwt签名加密时使用的秘钥
+

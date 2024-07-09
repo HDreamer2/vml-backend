@@ -4,13 +4,14 @@ import com.corundumstudio.socketio.SocketIOServer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hku.vmlbackend.common.ObjectMapperInstance;
+import com.hku.vmlbackend.dto.DecisionTreeDataDTO;
+import com.hku.vmlbackend.dto.DecisionTreePredictDTO;
+import com.hku.vmlbackend.dto.DecisionTreeTrainDTO;
 import com.hku.vmlbackend.dto.LinearRegressionEpochDataDTO;
-import com.hku.vmlbackend.dto.LinearRegressionTrainDTO;
+import com.hku.vmlbackend.service.DecisionTreeService;
 import com.hku.vmlbackend.service.FileService;
-import com.hku.vmlbackend.service.LinearRegressionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.*;
@@ -20,9 +21,10 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
+
 @Service
 @Slf4j
-public class LinearRegressionServiceImpl implements LinearRegressionService {
+public class DecisionTreeServiceImpl implements DecisionTreeService {
     @Value("${python.server.url}")
     private String pythonServerUrl;
     @Autowired
@@ -33,8 +35,7 @@ public class LinearRegressionServiceImpl implements LinearRegressionService {
     private final ObjectMapper objectMapper = ObjectMapperInstance.INSTANCE.getObjectMapper();
 
     @Override
-    public void train(LinearRegressionTrainDTO dto) {
-//        File file = fileService.getFileByMD5(dto.getMd5());
+    public void train(DecisionTreeTrainDTO dto) {
         File file = fileService.getFileByFileId(dto.getFileId());
         if (file == null) {
             throw new RuntimeException("File not found");
@@ -54,11 +55,10 @@ public class LinearRegressionServiceImpl implements LinearRegressionService {
             throw new RuntimeException(e);
         }
         body.add("label", dto.getLabel());
-        body.add("epoch", dto.getEpoch());
 
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
         ResponseEntity<String> response = restTemplate.exchange(
-                pythonServerUrl + "/linear-regression/train",
+                pythonServerUrl + "/decision-tree/train",
                 HttpMethod.POST,
                 requestEntity,
                 String.class
@@ -66,17 +66,41 @@ public class LinearRegressionServiceImpl implements LinearRegressionService {
         if (response.getStatusCode() != HttpStatus.OK) {
             throw new RuntimeException("Failed to train model: " + response.getStatusCode());
         }
-
     }
+
     @Override
-    public void getEpochData(EpochDataDTO dto) {
-        // 通过Socket.IO将数据传递给客户端
-        try {
-            String epochDataJson = objectMapper.writeValueAsString(dto);
-            socketIOServer.getBroadcastOperations().sendEvent("epochData", epochDataJson);
-            log.info("Epoch data sent to clients: {}", epochDataJson);
-        } catch (JsonProcessingException e) {
-            log.error("Error converting EpochDataDTO to JSON", e);
+    public void getData(DecisionTreeDataDTO dto) {
+        //TODO 将数据传给前端
+        log.info("Get data: {}", dto.getData());
+    }
+
+    @Override
+    public void predict(DecisionTreePredictDTO dto) {
+        File file = fileService.getFileByFileId(dto.getFileId());
+        if (file == null) {
+            throw new RuntimeException("File not found");
         }
+
+        // 将文件传递给Python后端
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+        // 创建MultiValueMap用于传递文件
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        body.add("file", new FileSystemResource(file));
+
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+        ResponseEntity<String> response = restTemplate.exchange(
+                pythonServerUrl + "/decision-tree/predict",
+                HttpMethod.POST,
+                requestEntity,
+                String.class
+        );
+        if (response.getStatusCode() != HttpStatus.OK) {
+            throw new RuntimeException("Failed to predict: " + response.getStatusCode());
+        }
+    }
+
 
 }

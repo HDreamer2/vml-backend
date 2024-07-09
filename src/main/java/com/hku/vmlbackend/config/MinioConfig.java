@@ -1,25 +1,24 @@
 package com.hku.vmlbackend.config;
 
-import io.minio.MinioClient;
-import io.minio.ObjectStat;
-import io.minio.PutObjectOptions;
-import io.minio.Result;
+import io.minio.*;
+import io.minio.errors.MinioException;
+import io.minio.http.Method;
 import io.minio.messages.Bucket;
 import io.minio.messages.Item;
-import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.util.UriUtils;
 
-import javax.servlet.http.HttpServletResponse;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 
 @Component
@@ -47,9 +46,11 @@ public class MinioConfig implements InitializingBean {
         Assert.hasText(url, "Minio url 为空");
         Assert.hasText(accessKey, "Minio accessKey为空");
         Assert.hasText(secretKey, "Minio secretKey为空");
-        this.minioClient = new MinioClient(this.host, this.accessKey, this.secretKey);
+        this.minioClient = MinioClient.builder()
+                .endpoint(this.host)
+                .credentials(this.accessKey, this.secretKey)
+                .build();
     }
-
 
 
     /**
@@ -57,40 +58,77 @@ public class MinioConfig implements InitializingBean {
      */
     public String putObject(MultipartFile multipartFile) throws Exception {
         // bucket 不存在，创建
-        if (!minioClient.bucketExists(this.bucket)) {
-            minioClient.makeBucket(this.bucket);
+        if (!bucketExists(this.bucket)) {
+            minioClient.makeBucket(MakeBucketArgs.builder().bucket(this.bucket).build());
         }
         try (InputStream inputStream = multipartFile.getInputStream()) {
-            // 上传文件的名称
-            String fileName = multipartFile.getOriginalFilename();
-            // PutObjectOptions，上传配置(文件大小，内存中文件分片大小)
-            PutObjectOptions putObjectOptions = new PutObjectOptions(multipartFile.getSize(), PutObjectOptions.MIN_MULTIPART_SIZE);
-            // 文件的ContentType
-            putObjectOptions.setContentType(multipartFile.getContentType());
-            minioClient.putObject(this.bucket, fileName, inputStream, putObjectOptions);
+//            // 上传文件的名称
+//            String fileName = multipartFile.getOriginalFilename();
+//            // PutObjectOptions，上传配置(文件大小，内存中文件分片大小)
+//            PutObjectOptions putObjectOptions = new PutObjectOptions(multipartFile.getSize(), PutObjectOptions.MIN_MULTIPART_SIZE);
+//            // 文件的ContentType
+//            putObjectOptions.setContentType(multipartFile.getContentType());
+//            minioClient.putObject(this.bucket, fileName,"id", inputStream, putObjectOptions);
+            String fileId = UUID.randomUUID().toString();
+            minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket(this.bucket)
+                            .object(fileId)
+                            .stream(inputStream, multipartFile.getSize(), -1)
+                            .contentType(multipartFile.getContentType())
+                            .build()
+            );
             // 返回访问路径
-            return this.url + UriUtils.encode(fileName, StandardCharsets.UTF_8);
+            return fileId;
         }
     }
 
     /**
      * 文件下载
      */
-    public void download(String fileName, HttpServletResponse response){
-        // 从链接中得到文件名
-        InputStream inputStream;
+//    public void download(String fileName, HttpServletResponse response) {
+////        // 从链接中得到文件名
+////        InputStream inputStream;
+////        try {
+////            MinioClient minioClient = new MinioClient(host, accessKey, secretKey);
+////            ObjectStat stat = minioClient.statObject(bucket, fileName);
+////            inputStream = minioClient.getObject(bucket, fileName);
+////            response.setContentType(stat.contentType());
+////            response.setCharacterEncoding("UTF-8");
+////            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8"));
+////            IOUtils.copy(inputStream, response.getOutputStream());
+////            inputStream.close();
+////        } catch (Exception e) {
+////            e.printStackTrace();
+////            System.out.println("有异常：" + e);
+////        }
+////    }
+    public File getFile(String fileId) throws IOException {
+        InputStream inputStream = null;
         try {
-            MinioClient minioClient = new MinioClient(host, accessKey, secretKey);
-            ObjectStat stat = minioClient.statObject(bucket, fileName);
-            inputStream = minioClient.getObject(bucket, fileName);
-            response.setContentType(stat.contentType());
-            response.setCharacterEncoding("UTF-8");
-            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8"));
-            IOUtils.copy(inputStream, response.getOutputStream());
-            inputStream.close();
-        } catch (Exception e){
-            e.printStackTrace();
-            System.out.println("有异常：" + e);
+            File file = File.createTempFile("minio-", ".tmp");
+            inputStream = minioClient.getObject(
+                    GetObjectArgs.builder()
+                            .bucket(this.bucket)
+                            .object(fileId)
+                            .build()
+            );
+            try (FileOutputStream outputStream = new FileOutputStream(file)) {
+                byte[] buf = new byte[8192];
+                int len;
+                while ((len = inputStream.read(buf)) != -1) {
+                    outputStream.write(buf, 0, len);
+                }
+            }
+
+            return file;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (inputStream != null) {
+                inputStream.close();
+
+            }
         }
     }
 
@@ -129,7 +167,7 @@ public class MinioConfig implements InitializingBean {
      * @throws Exception
      */
     public boolean bucketExists(String bucketName) throws Exception {
-        boolean flag = minioClient.bucketExists(bucketName);
+        boolean flag = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
         if (flag) {
             return true;
         }
@@ -147,7 +185,9 @@ public class MinioConfig implements InitializingBean {
             throws Exception {
         boolean flag = bucketExists(bucketName);
         if (!flag) {
-            minioClient.makeBucket(bucketName);
+            minioClient.makeBucket(MakeBucketArgs.builder()
+                    .bucket(bucketName)
+                    .build());
             return true;
         } else {
             return false;
@@ -174,11 +214,11 @@ public class MinioConfig implements InitializingBean {
                 }
             }
             // 删除存储桶，注意，只有存储桶为空时才能删除成功。
-            minioClient.removeBucket(bucketName);
+            minioClient.removeBucket(RemoveBucketArgs.builder()
+                    .bucket(bucketName)
+                    .build());
             flag = bucketExists(bucketName);
-            if (!flag) {
-                return true;
-            }
+            return !flag;
 
         }
         return false;
@@ -194,7 +234,7 @@ public class MinioConfig implements InitializingBean {
     public Iterable<Result<Item>> listObjects(String bucketName) throws Exception {
         boolean flag = bucketExists(bucketName);
         if (flag) {
-            return minioClient.listObjects(bucketName);
+            return minioClient.listObjects(ListObjectsArgs.builder().bucket(bucketName).build());
         }
         return null;
     }
@@ -231,8 +271,12 @@ public class MinioConfig implements InitializingBean {
         if (flag) {
             List<String> objectList = listObjectNames(bucketName);
             for (String s : objectList) {
-                if(s.equals(objectName)){
-                    minioClient.removeObject(bucketName, objectName);
+                if (s.equals(objectName)) {
+                    minioClient.removeObject(RemoveObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(objectName)
+                            .build());
+
                     return true;
                 }
             }
@@ -252,7 +296,11 @@ public class MinioConfig implements InitializingBean {
         boolean flag = bucketExists(bucketName);
         String url = "";
         if (flag) {
-            url = minioClient.getObjectUrl(bucketName, objectName);
+            url = minioClient.getPresignedObjectUrl(GetPresignedObjectUrlArgs.builder()
+                    .method(Method.GET)
+                    .bucket(bucketName)
+                    .object(objectName)
+                    .build());
         }
         return url;
     }

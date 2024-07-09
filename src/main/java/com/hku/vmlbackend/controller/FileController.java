@@ -16,16 +16,17 @@ public class FileController {
 
 
     @PostMapping("/upload-csv")
-    public Result uploadCsvFile(@RequestParam("file") MultipartFile file) {
+    public Result<String> uploadCsvFile(@RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
             return Result.error("Please select a file to upload");
         }
+        String fileId = null;
         try {
-            fileService.uploadCsvFile(file);
+            fileId = fileService.uploadCsvFile(file);
         } catch (RuntimeException e) {
             return Result.error(e.getMessage());
 
         }
-        return Result.success();
+        return Result.success(fileId);
     }
 }

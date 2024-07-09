@@ -2,11 +2,9 @@ package com.hku.vmlbackend.dto;
 
 import lombok.Data;
 
-
 @Data
-public class LinearRegressionTrainDTO {
+public class DecisionTreeTrainDTO {
     private String[] features;
     private String label;
-    private Integer epoch;
     private String fileId;
 }
