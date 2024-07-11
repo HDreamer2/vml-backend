@@ -69,7 +69,7 @@ public class LinearRegressionServiceImpl implements LinearRegressionService {
 
     }
     @Override
-    public void getEpochData(EpochDataDTO dto) {
+    public void getEpochData(LinearRegressionEpochDataDTO dto) {
         // 通过Socket.IO将数据传递给客户端
         try {
             String epochDataJson = objectMapper.writeValueAsString(dto);
@@ -78,5 +78,6 @@ public class LinearRegressionServiceImpl implements LinearRegressionService {
         } catch (JsonProcessingException e) {
             log.error("Error converting EpochDataDTO to JSON", e);
         }
+    }
 
 }
