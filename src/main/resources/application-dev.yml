@@ -5,13 +5,14 @@ minio-dev:
 vml:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    host: localhost
+    host: msp23050s1.cs.hku.hk
     port: 3306
     database: vml
     username: root
     password: 123456
-
 python:
   server:
     #根据开发/测试环境修改
-    url: http://localhost:8084
+    url: http://msp23050s1.cs.hku.hk:8084
+minio:
+  host: http://msp23050s1.cs.hku.hk:8082

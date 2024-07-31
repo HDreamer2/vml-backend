@@ -7,4 +7,5 @@ public class DecisionTreeTrainDTO {
     private String[] features;
     private String label;
     private String fileId;
+    private Integer  userId ;
 }

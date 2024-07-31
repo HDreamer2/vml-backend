@@ -33,5 +33,9 @@ public class DecisionTreeController {
         decisionTreeService.predict(dto);
         return Result.success();
     }
+    @GetMapping("/get-http-data")
+    public Result getHttpData(@RequestParam Integer userId,@RequestParam String fileId){
+        return Result.success(decisionTreeService.getHttpData(userId,fileId));
+    }
 
 }

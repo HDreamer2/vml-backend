@@ -10,10 +10,7 @@ import com.hku.vmlbackend.utils.JwtUtil;
 import com.hku.vmlbackend.vo.UserLoginVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +18,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/user")
 @Slf4j
+@CrossOrigin(origins = "*")  // 允许所有来源的跨域请求
 public class UserController {
 
     @Autowired

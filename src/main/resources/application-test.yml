@@ -14,4 +14,7 @@ vml:
 python:
   server:
     #根据开发/测试环境修改
-    url: http://msp23050s1.cs.hku.hk:8084
+    url: http://localhost:8084
+
+minio:
+  host: http://localhost:8082

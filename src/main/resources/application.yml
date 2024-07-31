@@ -12,7 +12,7 @@ python:
 
 spring:
   profiles:
-    active: dev
+    active: test
 
   servlet:
     multipart:
@@ -45,7 +45,7 @@ logging:
 
 
 minio:
-  host: http://msp23050s1.cs.hku.hk:8082
+  host: ${minio.host}
   url: ${minio.host}/${minio.bucket}/
   access-key: ${minio-dev.access-key}
   secret-key: ${minio-dev.secret-key}
@@ -53,7 +53,7 @@ minio:
 
 #socket????
 socketio:
-  host: localhost #IP??
+  host: 0.0.0.0 #IP??
   port: 8081  #???
 #?linux????????
 file:

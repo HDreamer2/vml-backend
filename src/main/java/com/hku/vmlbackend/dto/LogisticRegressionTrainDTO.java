@@ -8,4 +8,5 @@ public class LogisticRegressionTrainDTO {
     private String label;
     private Integer epoch;
     private String fileId;
+    private Integer  userId ;
 }

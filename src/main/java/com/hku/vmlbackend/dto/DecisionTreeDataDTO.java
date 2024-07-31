@@ -7,5 +7,9 @@ import java.io.Serializable;
 
 @Data
 public class DecisionTreeDataDTO implements Serializable {
+    private Integer  userId ;
+    private String fileId;
     JsonNode data;
+
+
 }

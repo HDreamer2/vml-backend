@@ -27,4 +27,8 @@ public class LogisticRegressionController {
         logisticRegressionService.getEpochData(dto);
         return Result.success();
     }
+    @GetMapping("/get-http-data")
+    public Result getHttpData(@RequestParam Integer userId,@RequestParam String fileId){
+        return Result.success(logisticRegressionService.getHttpData(userId,fileId));
+    }
 }

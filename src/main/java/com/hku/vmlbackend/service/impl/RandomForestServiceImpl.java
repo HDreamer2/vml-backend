@@ -5,16 +5,13 @@ import com.corundumstudio.socketio.SocketIOServer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hku.vmlbackend.common.ObjectMapperInstance;
-import com.hku.vmlbackend.dto.DecisionTreeDataDTO;
-import com.hku.vmlbackend.dto.DecisionTreePredictDTO;
-import com.hku.vmlbackend.dto.DecisionTreeTrainDTO;
-import com.hku.vmlbackend.dto.LinearRegressionEpochDataDTO;
-import com.hku.vmlbackend.entity.DecisionTreeData;
+import com.hku.vmlbackend.dto.RandomForestDataDTO;
+import com.hku.vmlbackend.dto.RandomForestPredictDTO;
+import com.hku.vmlbackend.dto.RandomForestTrainDTO;
 import com.hku.vmlbackend.entity.RandomForestData;
-import com.hku.vmlbackend.mapper.DecisionTreeDataMapper;
 import com.hku.vmlbackend.mapper.RandomForestDataMapper;
-import com.hku.vmlbackend.service.DecisionTreeService;
 import com.hku.vmlbackend.service.FileService;
+import com.hku.vmlbackend.service.RandomForestService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,28 +25,24 @@ import org.springframework.web.client.RestTemplate;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @Slf4j
-public class DecisionTreeServiceImpl implements DecisionTreeService {
+public class RandomForestServiceImpl implements RandomForestService {
     @Value("${python.server.url}")
     private String pythonServerUrl;
     @Autowired
     private FileService fileService;
     @Autowired
     private SocketIOServer socketIOServer;
+
     @Autowired
-    private DecisionTreeDataMapper decisionTreeDataMapper;
+    private RandomForestDataMapper randomForestDataMapper;
+
     private final ObjectMapper objectMapper = ObjectMapperInstance.INSTANCE.getObjectMapper();
 
-
-
-
     @Override
-    public void train(DecisionTreeTrainDTO dto) {
+    public void train(RandomForestTrainDTO dto) {
         File file = fileService.getFileByFileId(dto.getFileId());
         if (file == null) {
             throw new RuntimeException("File not found");
@@ -73,7 +66,7 @@ public class DecisionTreeServiceImpl implements DecisionTreeService {
         body.add("fileId", dto.getFileId());
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
         ResponseEntity<String> response = restTemplate.exchange(
-                pythonServerUrl + "/decision-tree/train",
+                pythonServerUrl + "/random-forest/train",
                 HttpMethod.POST,
                 requestEntity,
                 String.class
@@ -84,13 +77,16 @@ public class DecisionTreeServiceImpl implements DecisionTreeService {
     }
 
     @Override
-    public void getData(DecisionTreeDataDTO dto) {
+    public void getData(RandomForestDataDTO dto) {
         // 插入数据库
-        DecisionTreeData decisionTreeData= new DecisionTreeData();
-        decisionTreeData.setFileId(dto.getFileId());
-        decisionTreeData.setUserId(dto.getUserId());
-        decisionTreeData.setData(dto.getData().toString());
-        decisionTreeDataMapper.insert(decisionTreeData);
+        RandomForestData randomForestData = new RandomForestData();
+        randomForestData.setFileId(dto.getFileId());
+        randomForestData.setTreeIndex(dto.getTreeIndex());
+        randomForestData.setUserId(dto.getUserId());
+        randomForestData.setFeatures(dto.getFeatures().toString());
+        randomForestData.setTree(dto.getTree().toString());
+        randomForestDataMapper.insert(randomForestData);
+        //socketio将数据传给前端
         try {
             String epochDataJson = objectMapper.writeValueAsString(dto);
             // 获取所有连接的客户端
@@ -117,7 +113,7 @@ public class DecisionTreeServiceImpl implements DecisionTreeService {
     }
 
     @Override
-    public void predict(DecisionTreePredictDTO dto) {
+    public void predict(RandomForestPredictDTO dto) {
         File file = fileService.getFileByFileId(dto.getFileId());
         if (file == null) {
             throw new RuntimeException("File not found");
@@ -134,7 +130,7 @@ public class DecisionTreeServiceImpl implements DecisionTreeService {
 
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
         ResponseEntity<String> response = restTemplate.exchange(
-                pythonServerUrl + "/decision-tree/predict",
+                pythonServerUrl + "/random-forest/predict",
                 HttpMethod.POST,
                 requestEntity,
                 String.class
@@ -145,8 +141,8 @@ public class DecisionTreeServiceImpl implements DecisionTreeService {
     }
 
     @Override
-    public List<DecisionTreeData> getHttpData(Integer userId, String fileId) {
-        return decisionTreeDataMapper.getByUserIdAndFileId(userId,fileId);
+    public List<RandomForestData> getHttpData(Integer userId, String fileId) {
+        return randomForestDataMapper.getByUserIdAndFileId(userId,fileId);
     }
 
 

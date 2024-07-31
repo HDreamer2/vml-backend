@@ -26,4 +26,8 @@ public class LinearRegressionController {
         linearRegressionService.getEpochData(dto);
         return Result.success();
     }
+    @GetMapping("/get-http-data")
+    public Result getHttpData(@RequestParam Integer userId,@RequestParam String fileId){
+        return Result.success(linearRegressionService.getHttpData(userId,fileId));
+    }
 }

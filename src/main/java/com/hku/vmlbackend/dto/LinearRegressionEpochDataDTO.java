@@ -7,9 +7,12 @@ import java.util.List;
 
 @Data
 public class LinearRegressionEpochDataDTO implements Serializable {
-    //TODO 修改数据类型以匹配python端
+
+    private Integer  userId ;
+    private String fileId;
     private Integer epoch;
     private List<List<Double>> weights;
     private List<Double> bias;
     private Double loss;
+
 }
