@@ -1,5 +1,5 @@
 # Project Name
-vml-backend-Java
+Visible Financial Computing
 
 ## About
 
@@ -25,9 +25,10 @@ Before you begin installation, ensure you have the following software or tools i
 docker build -t backend:latest -f Dockerfile
 
 2.**run container**
-docker run --name my-spring-boot-app -d \
-  -p 8080:8080 \
-  -e "SPRING_OUTPUT_ANSI_ENABLED=ALWAYS" \
-  -e "JAVA_OPTS=-Xmx512m -Xms256m" \
+
+docker run --name my-spring-boot-app -d \\
+  -p 8080:8080 \\
+  -e "SPRING_OUTPUT_ANSI_ENABLED=ALWAYS" \\
+  -e "JAVA_OPTS=-Xmx512m -Xms256m" \\
   Backend:latest
 
